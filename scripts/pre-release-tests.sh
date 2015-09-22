@@ -34,10 +34,17 @@ if [ "${IS_LOCAL}" -eq 1 ]; then
 fi
 
 #ios 9 sim
-if [ `xcrun simctl list | grep "${DEFAULT_IOS9_SIMULATOR}" | wc -l` == 0 ]; then
-	xcrun simctl create $DEFAULT_IOS9_SIMULATOR 'iPhone 6' 'com.apple.CoreSimulator.SimRuntime.iOS-9-0'
+# if [ `xcrun simctl list | grep "${DEFAULT_IOS9_SIMULATOR}" | wc -l` == 0 ]; then
+# 	xcrun simctl create $DEFAULT_IOS9_SIMULATOR 'iPhone 6' 'com.apple.CoreSimulator.SimRuntime.iOS-9-0'
+# else
+# 	echo "${DEFAULT_IOS9_SIMULATOR} exists"
+# fi
+
+#watch os 2 sim
+if [ `xcrun simctl list | grep "${DEFAULT_WATCHOS2_SIMULATOR}" | wc -l` == 0 ]; then
+	xcrun simctl create $DEFAULT_WATCHOS2_SIMULATOR 'Apple Watch - 38mm' 'com.apple.CoreSimulator.SimRuntime.watchOS-2-0'
 else
-	echo "${DEFAULT_IOS9_SIMULATOR} exists"
+	echo "${DEFAULT_WATCHOS2_SIMULATOR} exists"
 fi
 
 if [ "${IS_QUICK}" -eq 1 ]; then
@@ -51,6 +58,13 @@ for configuration in ${CONFIGURATIONS[@]}
 do
 	rx "RxTests-iOS" ${configuration} $DEFAULT_IOS9_SIMULATOR test
 done
+
+#make sure all watchOS tests pass
+#tests for Watch OS are not available rdar://21760513
+# for configuration in ${CONFIGURATIONS[@]}
+# do
+# 	rx "RxTests-watchOS" ${configuration} $DEFAULT_WATCHOS2_SIMULATOR test
+# done
 
 #make sure all OSX tests pass
 for configuration in ${CONFIGURATIONS[@]}
