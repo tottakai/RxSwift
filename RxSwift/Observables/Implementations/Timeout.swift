@@ -27,9 +27,7 @@ class TimeoutSink<ElementType, Scheduler: SchedulerType, O: ObserverType where O
     }
     
     func run() -> Disposable {
-        debugPrint("run")
         _createTimeoutTimer()
-        debugPrint("run end")
         return StableCompositeDisposable.create(_timerD, _parent._source.subscribe(self))
     }
 
@@ -40,7 +38,6 @@ class TimeoutSink<ElementType, Scheduler: SchedulerType, O: ObserverType where O
     func _synchronized_on(event: Event<E>) {
         switch event {
         case .Next:
-            debugPrint(" on NEXT")
             forwardOn(event)
             self._createTimeoutTimer()
         case .Error:
@@ -53,8 +50,6 @@ class TimeoutSink<ElementType, Scheduler: SchedulerType, O: ObserverType where O
     }
     
     private func _createTimeoutTimer() {
-        debugPrint("     CreateTimer start")
-
         if _timerD.disposed {
             return
         }
@@ -64,27 +59,25 @@ class TimeoutSink<ElementType, Scheduler: SchedulerType, O: ObserverType where O
         _timerD.disposable = nextTimer
         
         nextTimer.disposable = _parent._scheduler.scheduleRelative((), dueTime: _parent._dueTime) {
-            debugPrint("     CreateTimer action")
-            
             self.forwardOn(.Error(RxError.Timeout))
             self.dispose()
-            
             return NopDisposable.instance
         }
-        debugPrint("     CreateTimer end")
     }
 }
 
 
 class Timeout<Element, Scheduler: SchedulerType> : Producer<Element> {
     
-    private let _dueTime: Scheduler.TimeInterval
-    private let _scheduler: Scheduler
     private let _source: Observable<Element>
+    private let _dueTime: Scheduler.TimeInterval
+    private let _other: Observable<Element>?
+    private let _scheduler: Scheduler
     
-    init(source: Observable<Element>, dueTime: Scheduler.TimeInterval, scheduler: Scheduler) {
+    init(source: Observable<Element>, dueTime: Scheduler.TimeInterval, other: Observable<Element>?, scheduler: Scheduler) {
         _source = source
         _dueTime = dueTime
+        _other = other
         _scheduler = scheduler
     }
     
